@@ -40,7 +40,7 @@
  */
 
 /* key matrix pins */
-#define MATRIX_ROW_PINS { C6, F7, D7, B1, E6, B2, B4, C8 }
+#define MATRIX_ROW_PINS { C6, F7, D7, B1, E6, B2, B4, B3 }
 #define MATRIX_COL_PINS { D1, D0, D4, F6, F5, F4 }
 #define UNUSED_PINS 
 
