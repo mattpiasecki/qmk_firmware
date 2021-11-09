@@ -25,8 +25,8 @@
 #define DEVICE_VER 0x0001
 
 /* key matrix size */
-#define MATRIX_ROWS 6
-#define MATRIX_COLS 8
+#define MATRIX_ROWS 8
+#define MATRIX_COLS 6
 
 /*
  * Keyboard Matrix Assignments
@@ -40,13 +40,16 @@
  */
 
 /* key matrix pins */
-#define MATRIX_ROW_PINS { D1, D0, D4, F6, F5, F4 }
-#define MATRIX_COL_PINS { C6, F7, D7, B1, E6, B2, B4, C8 }
+#define MATRIX_ROW_PINS { C6, F7, D7, B1, E6, B2, B4, C8 }
+#define MATRIX_COL_PINS { D1, D0, D4, F6, F5, F4 }
 #define UNUSED_PINS 
 
 /* Define encoder pads */
-#define ENCODERS_PAD_A { F4 }
-#define ENCODERS_PAD_B { F5 }
+#define ENCODERS_PAD_A { B6, D3 }
+#define ENCODERS_PAD_B { B5, D2 }
+
+/* Resolution defines how many pulses the encoder registers between each detent */
+#define ENCODER_RESOLUTION 4
 
 /* COL2ROW or ROW2COL */
 #define DIODE_DIRECTION COL2ROW
