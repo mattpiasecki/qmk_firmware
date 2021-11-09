@@ -45,8 +45,8 @@
 #define UNUSED_PINS 
 
 /* Define encoder pads */
-#define ENCODERS_PAD_A { B6, D3 }
-#define ENCODERS_PAD_B { B5, D2 }
+#define ENCODERS_PAD_A { D3, B6, }
+#define ENCODERS_PAD_B { D2, B5, }
 
 /* Resolution defines how many pulses the encoder registers between each detent */
 #define ENCODER_RESOLUTION 4
