@@ -50,19 +50,47 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 };
 
-bool encoder_update_user(uint8_t index, bool clockwise) {
-    if (index == 0) { /* left encoder */
-        if (clockwise) {
-            tap_code(KC_MS_U);
-        } else {
-            tap_code(KC_MS_D);
-        }
-    } else if (index == 1) { /* right encoder */
-        if (clockwise) {
-            tap_code(KC_MS_L);
-        } else {
-            tap_code(KC_MS_R);
+#ifdef ENCODER_ENABLE
+    bool encoder_update_user(uint8_t index, bool clockwise) {
+        index == 0 ? leftEncoder_update(clockwise) : rightEncoder_update(clockwise);
+        return true;
+    }
+
+    void leftEncoder_update(bool clockwise) {
+        switch (biton32(layer_state))
+        {
+            case _BASE:
+                clockwise ? tap_code(KC_MS_U) : tap_code(KC_MS_D);
+                break;
+            case _NUM:
+                //Word jumping
+                register_code(KC_LCTRL);
+                clockwise ? tap_code(KC_RGHT) : tap_code(KC_LEFT);
+                unregister_code(KC_LCTRL);
+                break;
+            case _FN:
+                clockwise ? tap_code(KC_MS_WH_DOWN) : tap_code(KC_MS_WH_UP);
+                break;
         }
     }
-    return true;
-}
+
+    void rightEncoder_update(bool clockwise) {
+        switch (biton32(layer_state))
+        {
+            case _BASE:
+                clockwise ? tap_code(KC_MS_R) : tap_code(KC_MS_L);
+                break;
+            case _NUM:
+                //Word selection
+                register_code(KC_LSFT);
+                register_code(KC_LCTRL);
+                clockwise ? tap_code(KC_RGHT) : tap_code(KC_LEFT);
+                unregister_code(KC_LSFT);
+                unregister_code(KC_LCTRL);
+                break;
+            case _FN:
+                clockwise ? tap_code(KC_MS_WH_R) : tap_code(KC_MS_WH_L);
+                break;
+        }
+    } 
+#endif
