@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT_ID 0x0000
 #define DEVICE_VER 0x0001
 #define MANUFACTURER keebwerk.
-#define PRODUCT nano. slider
+#define PRODUCT nano. slider Bentō edition
 
 /* key matrix size */
 #define MATRIX_ROWS 2
@@ -38,6 +38,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define UNUSED_PINS
 
 #define SLIDER_PIN D4
+#define POT_TOLERANCE 10
 
 /* COL2ROW, ROW2COL*/
 #define DIODE_DIRECTION COL2ROW
