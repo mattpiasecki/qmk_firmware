@@ -19,7 +19,7 @@
 #include QMK_KEYBOARD_H
 
 // safe range starts at `PLOOPY_SAFE_RANGE` instead.
-uint8_t scroll_enabled = 1;
+uint8_t scroll_enabled = 0;
 uint8_t lock_state = 0;
 int8_t  delta_x        = 0;
 int8_t  delta_y        = 0;
@@ -49,6 +49,7 @@ void process_mouse_user(report_mouse_t *mouse_report, int8_t x, int8_t y) {
 		mouse_report->y = y;
     }
 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 void keyboard_post_init_user(void) {
@@ -80,3 +81,5 @@ bool led_update_user(led_t led_state) {
 }
 =======
 >>>>>>> e2ea031795 (update)
+=======
+>>>>>>> e2ea0317956524f2f3fce9316dade6e94550a4c7
