@@ -19,7 +19,7 @@
 #include QMK_KEYBOARD_H
 
 // safe range starts at `PLOOPY_SAFE_RANGE` instead.
-uint8_t scroll_enabled = 0;
+uint8_t scroll_enabled = 1;
 uint8_t lock_state = 0;
 int16_t delta_x = 0;
 int16_t delta_y = 0;
@@ -28,7 +28,7 @@ void process_mouse_user(report_mouse_t *mouse_report, int16_t x, int16_t y) {
 	if (scroll_enabled) {
 		delta_x += x;
 		delta_y += y;
-		
+
 		if (delta_x > 60) {
 			mouse_report->h = 1;
 			delta_x = 0;
@@ -48,32 +48,4 @@ void process_mouse_user(report_mouse_t *mouse_report, int16_t x, int16_t y) {
 		mouse_report->x = x;
 		mouse_report->y = y;
 	}
-}
-
-void keyboard_post_init_user(void) {
-	lock_state = host_keyboard_led_state().num_lock;
-}
-
-bool led_update_user(led_t led_state) {
-	static uint8_t lock_count = 0;
-	static uint16_t scroll_timer = 0;
-
-	if (timer_elapsed(scroll_timer) > 25) {
-		scroll_timer = timer_read();
-		lock_count = 0;
-	}
-    
-	if (led_state.num_lock != lock_state) {
-		lock_count++;
-
-		if (lock_count == 2) {
-			scroll_enabled = !scroll_enabled;
-			lock_count = 0;
-			delta_x = 0;
-			delta_y = 0;
-		}
-	}
-    
-	lock_state = led_state.num_lock;
-	return true;
 }
