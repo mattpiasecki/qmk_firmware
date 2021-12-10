@@ -22,6 +22,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MATRIX_ROW_PINS { C7, C6, B6, B5, B7}
 #define MATRIX_COL_PINS { D3, D2, D1, D0, D5, F7, F6, E6, F5, F4, F1, B0}
 
+#ifdef VIAL_ENABLE
+    #define VIAL_KEYBOARD_UID {0x98, 0xE0, 0x67, 0xEF, 0x09, 0x06, 0xF6, 0x6F}
+    #define VIAL_UNLOCK_COMBO_ROWS { 0, 0 }
+    #define VIAL_UNLOCK_COMBO_COLS { 4, 11 }
+#endif
+
+#ifdef VIA_ENABLE
+    #define DYNAMIC_KEYMAP_LAYER_COUNT 6
+#endif
+
 #ifdef COMBO_ENABLE
     #define COMBO_COUNT 7
     #define COMBO_TERM 40

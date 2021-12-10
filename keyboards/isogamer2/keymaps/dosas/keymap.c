@@ -1,4 +1,5 @@
 #include QMK_KEYBOARD_H
+#include "bit-c_led.h"
 
 enum layers{
   _BASE,
@@ -35,6 +36,7 @@ enum layers{
 #define NUM LT(_NUM,KC_BSPC)
 #define NAV LT(_NAV,KC_RGHT)
 #define SYM LT(_SYM,KC_BSPC)
+#define SYMent LT(_SYM,KC_ENT)
 // #define MOUSE LT(_MOUSE,KC_ENT)
 #define xxx KC_TRNS
 #define GuiG LGUI_T(KC_G)
@@ -54,7 +56,7 @@ enum layers{
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_BASE] = LAYOUT(
    KC_GESC, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, NUM,
-   LSFT_T(KC_TAB), KC_A, KC_S, KC_D, KC_F, KC_G, GuiH, SftJ, CtlK, AltL, KC_SCLN, RSFT_T(KC_ENT),
+   LSFT_T(KC_TAB), KC_A, KC_S, KC_D, KC_F, KC_G, GuiH, SftJ, CtlK, AltL, KC_QUOT, SYMent,
    xxx, KC_Z, KC_X, KC_C, KC_V, KC_B, KC_N, KC_M, KC_COMM, KC_DOT, KC_UP, xxx,
        KC_LCTL, KC_LALT, KC_LGUI, KC_SPC, SYM, KC_LEFT, KC_DOWN, NAV
   ),
@@ -74,13 +76,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
   [_SYM] = LAYOUT(
-    KC_MPLY, KC_QUOT,C(S(A(KC_W))),KC_EQL,KC_F5,KC_TILD,xxx,KC_UNDS,KC_EXLM,xxx,KC_PERC, xxx,
+    KC_MPLY, KC_SLSH,C(S(A(KC_W))),KC_EQL,KC_F5,KC_TILD,xxx,KC_UNDS,KC_EXLM,xxx,KC_PERC, xxx,
     KC_CAPS, KC_AT,KC_MINS,KC_DLR,KC_NO,KC_GRV,KC_HASH,WinPrv,WinNxt,KC_PIPE,KC_SCLN, xxx,
     xxx,KC_LBRC,KC_ASTR,KC_COLN,KC_CIRC,KC_AMPR,KC_NLCK,xxx,DskPrv,DskNxt,KC_BSLS,xxx,
               xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx
    )
 
 };
+
+bool led_update_kb(led_t led_state) {
+    bool res = led_update_user(led_state);
+    if(res) {
+        led_state.caps_lock ? set_bit_c_LED(LED_ON) : set_bit_c_LED(LED_OFF);
+    }
+    return res;
+}
 
 #ifdef ENCODER_ENABLE
     bool encoder_update_user(uint8_t index, bool clockwise) {

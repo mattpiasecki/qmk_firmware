@@ -21,16 +21,24 @@ enum layers{
   _NUM,
   _NAV,
   _SYM,
-  _MOUSE
+  _MOUSE,
+  _GAME
 };
 
 #ifdef COMBO_ENABLE
     enum combo_events {
-    combo_ESC,
-    combo_BACK,
-    combo_TAB,
-    combo_DELETE,
-    combo_ENTER,
+        combo_ESC,
+        combo_BACK,
+        combo_TAB,
+        combo_DEL,
+        combo_DELETE,
+        combo_ENTER,
+        combo_WINL,
+        combo_WINR,
+        combo_WINU,
+        combo_WIND,
+        combo_APPNXT,
+        combo_APPPRV,
     };
 
     const uint16_t PROGMEM esc_combo[] = {KC_Q, KC_W, COMBO_END};
@@ -38,13 +46,26 @@ enum layers{
     const uint16_t PROGMEM tab_combo[] = {KC_W, KC_E, COMBO_END};
     const uint16_t PROGMEM del_combo[] = {KC_LBRC, KC_RBRC, COMBO_END};
     const uint16_t PROGMEM ent_combo[] = {KC_SCLN, KC_QUOT, COMBO_END};
+    const uint16_t PROGMEM winl_combo[] = {KC_LEFT, KC_DOWN, COMBO_END};
+    const uint16_t PROGMEM winr_combo[] = {KC_DOWN, KC_RGHT, COMBO_END};
+    const uint16_t PROGMEM winu_combo[] = {KC_UP, KC_DOWN, COMBO_END};
+    const uint16_t PROGMEM wind_combo[] = {KC_LEFT, KC_RGHT, COMBO_END};
+    const uint16_t PROGMEM appnxt_combo[] = {KC_UP, KC_RGHT, COMBO_END};
+    const uint16_t PROGMEM appprv_combo[] = {KC_LEFT, KC_UP, COMBO_END};
 
     combo_t key_combos[COMBO_COUNT] = {
-    [combo_ESC] = COMBO(esc_combo, KC_ESC),
-    [combo_BACK] = COMBO(bspc_combo, KC_BSPC),
-    [combo_TAB] = COMBO(tab_combo, KC_TAB),
-    [combo_DELETE] = COMBO(del_combo, KC_DEL),
-    [combo_ENTER] = COMBO(ent_combo, KC_ENT),
+        [combo_ESC] = COMBO(esc_combo, KC_ESC),
+        [combo_BACK] = COMBO(bspc_combo, KC_BSPC),
+        [combo_DEL] = COMBO(del_combo, KC_DEL),
+        [combo_TAB] = COMBO(tab_combo, KC_TAB),
+        [combo_DELETE] = COMBO(del_combo, KC_DEL),
+        [combo_ENTER] = COMBO(ent_combo, KC_ENT),
+        [combo_WINL] = COMBO(winl_combo, G(KC_LEFT)),
+        [combo_WINR] = COMBO(winr_combo, G(KC_RGHT)),
+        [combo_WIND] = COMBO(wind_combo, G(KC_DOWN)),
+        [combo_WINU] = COMBO(winu_combo, G(KC_UP)),
+        [combo_APPNXT] = COMBO(appnxt_combo, A(C(KC_TAB))),
+        [combo_APPPRV] = COMBO(appprv_combo, S(A(C(KC_TAB)))),
     };
 #endif
 
@@ -133,10 +154,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_MOUSE] = LAYOUT_ortho(
-        RESET, xxx, KC_WH_L,KC_MS_U,KC_WH_R, xxx, xxx, xxx, KC_WH_U, xxx, xxx, xxx, xxx, xxx,
+        RESET, xxx, KC_WH_L,KC_MS_U,KC_WH_R, xxx, xxx, xxx, KC_WH_U, xxx, xxx, xxx, TG(_GAME), xxx,
         DEBUG, xxx, KC_MS_L,KC_MS_D,KC_MS_R,KC_WH_U, xxx, KC_WH_L, KC_WH_D, KC_WH_R, xxx, xxx, xxx,
         xxx, xxx, KC_ACL0,KC_ACL1,KC_ACL2,KC_WH_D, xxx, KC_ACL0, KC_ACL1, KC_ACL2, xxx, xxx, KC_MFFD,
         xxx, xxx, xxx, KC_BTN3, KC_BTN1,KC_BTN2,KC_BTN2, xxx, xxx, xxx, xxx, KC_MPRV, KC_MRWD, KC_MNXT
+    ),
+
+    [_GAME] = LAYOUT_ortho(
+        KC_ESC, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_LBRC, TG(_GAME), KC_MPLY,
+        KC_TAB, KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT, KC_ENT,
+        KC_LSPO,KC_Z, KC_X, KC_C, KC_V, KC_B, KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, TD(X_BSLH), KC_UP,
+        TG(_GAME), KC_LCPO, KC_RAPC, KC_LGUI, KC_SPC, KC_SPC, KC_SPC, SYM, NUM, MOUSE, End, KC_LEFT, KC_DOWN, KC_RGHT
     )
 };
 
@@ -156,9 +184,9 @@ void matrix_init_user(void) {
 layer_state_t layer_state_set_user(layer_state_t state) {
     writePinLow(B7);
     switch (get_highest_layer(state)) {
-    case _MOUSE:
-        writePinHigh(B7);
-        break;
+        case _MOUSE:
+            writePinHigh(B7);
+            break;
     }
     return state;
 }
@@ -206,6 +234,11 @@ bool led_update_user(led_t led_state) {
                     rgblight_sethsv (HSV_PURPLE);
                 }
                 break;
+            case _GAME:
+                if (has_layer_changed) {
+                    rgblight_sethsv (HSV_RED);
+                }
+                break;
             default:
                 if (has_layer_changed) {
                     rgblight_sethsv (0,0,0);
@@ -249,6 +282,9 @@ bool led_update_user(led_t led_state) {
                 break;
             case _MOUSE:
                 clockwise ? tap_code(KC_MS_WH_DOWN) : tap_code(KC_MS_WH_UP);
+                break;
+            case _GAME:
+                clockwise ? tap_code(KC_VOLU) : tap_code(KC_VOLD);
                 break;
         }
         return true;

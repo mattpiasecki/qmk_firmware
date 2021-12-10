@@ -32,6 +32,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* COL2ROW, ROW2COL */
 #define DIODE_DIRECTION COL2ROW
 
+#ifdef VIAL_ENABLE
+    #define VIAL_KEYBOARD_UID {0x98, 0xE0, 0x67, 0xEF, 0x09, 0x06, 0xF6, 0x6F}
+    #define VIAL_UNLOCK_COMBO_ROWS { 0, 0 }
+    #define VIAL_UNLOCK_COMBO_COLS { 4, 11 }
+#endif
+
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
 #define DEBOUNCE 5
 
