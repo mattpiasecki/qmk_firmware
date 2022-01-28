@@ -150,7 +150,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_BASE] = LAYOUT(
         KC_Q, KC_W, KC_E, KC_R, KC_T,    KC_Y, KC_U, KC_I, KC_O, KC_P,
         KC_A, AltS, CtlD, SftF, GuiG, NAVPLY,   GuiH, SftJ, CtlK, AltL, KC_QUOT,
-        KC_Z, KC_X, KC_C, KC_V, KC_B, MTAB,   KC_N, KC_M, KC_COMM, KC_DOT, KC_BSLS,
+        KC_Z, KC_X, KC_C, KC_V, KC_B, MTAB,   KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH,
                 TG(_MOUSE), KC_LGUI, NAV,    SYM, NUM, TD(X_NUMTAP)
   ),
 
