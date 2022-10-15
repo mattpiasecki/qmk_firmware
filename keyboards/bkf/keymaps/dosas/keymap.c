@@ -19,7 +19,8 @@ enum layers{
   _BASE,
   _NUM,
   _NAV,
-  _SYM
+  _SYM,
+  _MOUSE
 };
 
 #ifdef COMBO_ENABLE
@@ -48,9 +49,11 @@ enum layers{
 #endif
 
 //Personal
-#define NUM LT(_NUM,KC_BSPC)
+#define NUM LT(_NUM,KC_ENT)
 #define NAV LT(_NAV,KC_SPC)
 #define SYM LT(_SYM,KC_BSPC)
+#define FN LT(_MOUSE,KC_TAB)
+#define MPLY LT(_NUM,KC_MPLY)
 #define SYMent LT(_SYM,KC_ENT)
 // #define MOUSE LT(_MOUSE,KC_ENT)
 #define xxx KC_TRNS
@@ -71,10 +74,10 @@ enum layers{
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_BASE] = LAYOUT_2x3uC(
-        KC_GESC, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_BSPC, KC_DEL,
-        KC_TAB,    KC_A, AltS, CtlD, SftF, GuiG, GuiH, SftJ, CtlK, AltL, KC_SCLN,     KC_ENT,
+        KC_GESC, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_LBRC, MPLY,
+        FN,    KC_A, AltS, CtlD, SftF, GuiG, GuiH, SftJ, CtlK, AltL, KC_QUOT,     NUM,
         KC_LSPO, KC_Z, KC_X, KC_C, KC_V, KC_B, KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSPC,
-        KC_LCTL, KC_LGUI, KC_LALT,           NAV,     SYM,               NUM, xxx, KC_QUOT
+        KC_LCTL, KC_LALT, KC_LGUI,           NAV,     SYM,               NUM, xxx, KC_QUOT
   ),
 
 
@@ -86,17 +89,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
     [_NAV] = LAYOUT_2x3uC(
-        RESET, xxx, S(KC_HOME),S(KC_UP),S(KC_END),S(KC_PGUP),KC_PGUP,KC_HOME,KC_UP,KC_END, xxx, xxx, xxx,
+        RESET, xxx, S(KC_HOME),S(KC_UP),S(KC_END),S(KC_PGUP),KC_PGUP,KC_HOME,KC_UP,KC_END, xxx, xxx, KC_MUTE,
         DEBUG, xxx, S(C(KC_LEFT)),S(KC_DOWN),S(C(KC_RGHT)),S(KC_PGDN),KC_PGDN,KC_LEFT,KC_DOWN,KC_RGHT, xxx, xxx,
         xxx,  C(KC_Z),C(KC_X),C(KC_C),C(KC_V),  xxx,  xxx,  xxx,  xxx,  xxx,  xxx,  xxx,
-        xxx, xxx, xxx,                xxx,         xxx,         xxx, xxx, xxx
+        xxx, xxx, xxx,                xxx,         KC_DEL,         xxx, xxx, xxx
   ),
 
     [_SYM] = LAYOUT_2x3uC(
-        xxx, KC_SLSH,C(S(A(KC_W))),KC_EQL,KC_F5,KC_TILD,xxx,KC_UNDS,KC_EXLM,xxx,KC_PERC, xxx, xxx,
+        xxx, KC_SLSH,C(S(A(KC_W))),KC_EQL,KC_F5,KC_TILD,xxx,KC_UNDS,KC_EXLM,xxx,KC_PERC, KC_RBRC, xxx,
         xxx,  KC_AT,KC_MINS,KC_DLR,KC_NO,KC_GRV,KC_HASH,WinPrv,WinNxt,KC_PIPE,KC_SCLN,  xxx,
         xxx,  KC_LBRC,KC_ASTR,KC_COLN,KC_CIRC,KC_AMPR,KC_NLCK,KC_MAIL,DskPrv,DskNxt,KC_BSLS,  xxx,
-        xxx, xxx, xxx,                xxx,         xxx,         xxx, xxx, xxx
+        TG(_MOUSE), xxx, xxx,                xxx,         xxx,         xxx, xxx, xxx
+  ),
+    [_MOUSE] = LAYOUT_2x3uC(
+        xxx, xxx,KC_WH_L,KC_MS_U,KC_WH_R, xxx, xxx, xxx, KC_WH_U, xxx, xxx, KC_RBRC, xxx,
+        xxx, xxx,KC_MS_L,KC_MS_D,KC_MS_R,KC_WH_U, xxx, KC_WH_L, KC_WH_D, KC_WH_R, xxx,  xxx,
+        xxx, xxx,KC_ACL0,KC_ACL1,KC_ACL2,KC_WH_D, xxx, KC_ACL0, KC_ACL1, KC_ACL2, xxx,  xxx,
+        TG(_MOUSE), xxx, KC_BTN3,KC_BTN1,KC_BTN2,         xxx, xxx, xxx
   )
 
 };

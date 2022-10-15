@@ -17,8 +17,12 @@
 
 enum layers{
   _BASE,
-  _NUM_SYM,
-  _NAV
+  _APPS,
+  _NUM,
+  _MAG,
+  _NAV,
+  _SYM,
+  _MOUSE
 };
 
 enum combo_events {

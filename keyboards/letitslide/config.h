@@ -1,4 +1,4 @@
-/* Copyright 2020 drhigsby
+/* Copyright 2021 drhigsby
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,14 @@
 
 /* USB Device descriptor parameter */
 #define MANUFACTURER DrHigsby
-#define PRODUCT Dubba175
-#define VENDOR_ID 0x0420
-#define PRODUCT_ID 0x0420
-#define DEVICE_VER 0x0420
+#define PRODUCT Let It Slide!
+#define VENDOR_ID 0x0007
+#define PRODUCT_ID 0x0001
+#define DEVICE_VER 0x0005
 
 /* key matrix size */
 #define MATRIX_ROWS 4
-#define MATRIX_COLS 10
+#define MATRIX_COLS 13
 
 /*
  * Keyboard Matrix Assignments
@@ -40,9 +40,12 @@
  */
 
 /* key matrix pins */
-#define MATRIX_ROW_PINS { B1, B3, B2, B5 }
-#define MATRIX_COL_PINS { D3, D2, D1, D0, D4, C6, D7, E6, B4, B6 }
+#define MATRIX_ROW_PINS { F4, F5, D5, D3 }
+#define MATRIX_COL_PINS { C7, C6, B6, B5, B4, D7, D6, D4, B2, B3, D1, D0, D2 }
 #define UNUSED_PINS
+
+/*slider pin */
+#define POT_PIN F0
 
 /* COL2ROW or ROW2COL */
 #define DIODE_DIRECTION COL2ROW
@@ -54,3 +57,7 @@
 #define LOCKING_SUPPORT_ENABLE
 /* Locking resynchronize hack */
 #define LOCKING_RESYNC_ENABLE
+
+/* Define encoder pads */
+#define ENCODERS_PAD_A { F7 }
+#define ENCODERS_PAD_B { F6 }

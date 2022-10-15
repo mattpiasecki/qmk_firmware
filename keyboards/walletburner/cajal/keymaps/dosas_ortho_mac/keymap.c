@@ -16,6 +16,10 @@
 
 #include QMK_KEYBOARD_H
 
+bool is_gui_tab_active = false; // ADD this near the begining of keymap.c
+uint16_t gui_tab_timer = 0;     // we will be using them soon.
+uint16_t gui_tab_delay = 1000;  // amount of time to keep mod "held"
+
 enum layers{
   _BASE,
   _NUM,
@@ -26,6 +30,11 @@ enum layers{
   _GAME2
 };
 
+enum my_keycodes {
+  PRVAPP = SAFE_RANGE,
+  NXTAPP
+};
+
 #ifdef COMBO_ENABLE
     enum combo_events {
         combo_ESC,
@@ -34,12 +43,6 @@ enum layers{
         combo_DEL,
         combo_DELETE,
         combo_ENTER,
-        combo_WINL,
-        combo_WINR,
-        combo_WINU,
-        combo_WIND,
-        combo_APPNXT,
-        combo_APPPRV,
     };
 
     const uint16_t PROGMEM esc_combo[] = {KC_Q, KC_W, COMBO_END};
@@ -47,12 +50,6 @@ enum layers{
     const uint16_t PROGMEM tab_combo[] = {KC_W, KC_E, COMBO_END};
     const uint16_t PROGMEM del_combo[] = {KC_LBRC, KC_RBRC, COMBO_END};
     const uint16_t PROGMEM ent_combo[] = {KC_SCLN, KC_QUOT, COMBO_END};
-    const uint16_t PROGMEM winl_combo[] = {KC_LEFT, KC_DOWN, COMBO_END};
-    const uint16_t PROGMEM winr_combo[] = {KC_DOWN, KC_RGHT, COMBO_END};
-    const uint16_t PROGMEM winu_combo[] = {KC_UP, KC_DOWN, COMBO_END};
-    const uint16_t PROGMEM wind_combo[] = {KC_LEFT, KC_RGHT, COMBO_END};
-    const uint16_t PROGMEM appnxt_combo[] = {KC_UP, KC_RGHT, COMBO_END};
-    const uint16_t PROGMEM appprv_combo[] = {KC_LEFT, KC_UP, COMBO_END};
 
     combo_t key_combos[COMBO_COUNT] = {
         [combo_ESC] = COMBO(esc_combo, KC_ESC),
@@ -61,12 +58,6 @@ enum layers{
         [combo_TAB] = COMBO(tab_combo, KC_TAB),
         [combo_DELETE] = COMBO(del_combo, KC_DEL),
         [combo_ENTER] = COMBO(ent_combo, KC_ENT),
-        [combo_WINL] = COMBO(winl_combo, G(KC_LEFT)),
-        [combo_WINR] = COMBO(winr_combo, G(KC_RGHT)),
-        [combo_WIND] = COMBO(wind_combo, G(KC_DOWN)),
-        [combo_WINU] = COMBO(winu_combo, G(KC_UP)),
-        [combo_APPNXT] = COMBO(appnxt_combo, A(C(KC_TAB))),
-        [combo_APPPRV] = COMBO(appprv_combo, S(A(C(KC_TAB)))),
     };
 #endif
 
@@ -109,7 +100,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_BASE] = LAYOUT_ortho(
         KC_ESC, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_LBRC, KC_RBRC, KPLAY,
-        KC_TAB, KC_A, AltS, CtlD, SftF, GuiG, GuiH, SftJ, CtlK, AltL, KC_SCLN, KC_QUOT, KC_ENT,
+        KC_TAB, CtlA, AltS, GuiD, SftF, KC_G, KC_H, SftJ, GuiK, AltL, CtlScln, KC_QUOT, KC_ENT,
         KC_LSPO,KC_Z, KC_X, KC_C, KC_V, KC_B, KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, TD(X_BSLH), KC_UP,
         TG(_GAME), KC_LCPO, KC_RAPC, KC_LGUI, NAV, KC_SPC, KC_SPC, SYM, NUM, MOUSE, End, KC_LEFT, KC_DOWN, KC_RGHT
     ),
@@ -123,15 +114,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_SYM] = LAYOUT_ortho(
         KC_TILD, KC_QUOT,xxx,KC_EQL,KC_F5,KC_TILD,xxx,KC_UNDS,KC_EXLM,xxx,KC_PERC, KC_F11, KC_F12, xxx,
-        xxx, KC_AT,KC_MINS,KC_DLR,KC_NO,KC_GRV,KC_HASH,WinPrv,WinNxt,KC_PIPE,KC_SCLN, xxx, xxx,
-        xxx, xxx, KC_ASTR,KC_COLN,KC_CIRC,KC_AMPR,KC_NLCK,KC_MAIL,DskPrv,DskNxt,TD(X_BSLH), xxx, xxx,
+        xxx, KC_AT,KC_MINS,KC_DLR,KC_NO,KC_GRV,KC_HASH,PRVAPP,NXTAPP,KC_PIPE,KC_SCLN, xxx, xxx,
+        xxx, xxx, KC_ASTR,KC_COLN,KC_CIRC,KC_AMPR,KC_NLCK,KC_MAIL,WinPrv,WinNxt,TD(X_BSLH), xxx, xxx,
         xxx, xxx, xxx, xxx, MO(_NAV), xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx
     ),
 
     [_NAV] = LAYOUT_ortho(
-        xxx,xxx, S(KC_HOME),S(KC_UP),S(KC_END),S(KC_PGUP),KC_PGUP,KC_HOME,KC_UP,KC_END, xxx, xxx, xxx, RGB_TOG,
-        xxx,xxx, S(C(KC_LEFT)),S(KC_DOWN),S(C(KC_RGHT)),S(KC_PGDN),KC_PGDN,KC_LEFT,KC_DOWN,KC_RGHT, xxx, xxx, xxx,
-        xxx, C(KC_Z),C(KC_X),C(KC_C),C(KC_V), xxx,xxx, xxx, RGB_SAD, RGB_SAI, xxx, xxx, RGB_VAI,
+        KC_GESC,xxx,S(G(KC_LEFT)),S(KC_UP),S(G(KC_RIGHT)),S(G(KC_UP)),G(KC_UP),G(KC_LEFT),KC_UP,G(KC_RGHT), xxx, xxx, xxx, RGB_TOG,
+        xxx,G(KC_A),S(A(KC_LEFT)),S(KC_DOWN),S(A(KC_RGHT)),S(G(KC_DOWN)),G(KC_DOWN),KC_LEFT,KC_DOWN,KC_RGHT, xxx, xxx, xxx,
+        xxx, G(KC_Z),G(KC_X),G(KC_C),G(KC_V), xxx,xxx, xxx, TabPrv, TabNxt, xxx, xxx, RGB_VAI,
         xxx, xxx, xxx, xxx, xxx, xxx, xxx, KC_DEL, KC_CAPS, xxx, xxx, RGB_HUD, RGB_VAD, RGB_HUI
     ),
 
@@ -155,6 +146,39 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         xxx, KC_LCPO, KC_RAPC, KC_LGUI, KC_0, KC_SPC, KC_SPC, SYM, GNUM, MOUSE, End, KC_LEFT, KC_DOWN, KC_RGHT
     )
 };
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case NXTAPP:
+      if (record->event.pressed) {
+        if (!is_gui_tab_active) {
+            register_code(KC_LGUI);
+        }
+        gui_tab_timer = timer_read();
+        register_code(KC_TAB);
+      } else {
+        unregister_code(KC_LGUI);
+      }
+      return false; // Skip all further processing of this key
+    case PRVAPP:
+      if (record->event.pressed) {
+        if (!is_gui_tab_active) {
+            is_gui_tab_active = true;
+            register_code(KC_LGUI);
+        }
+        gui_tab_timer = timer_read();
+        register_code(KC_LSFT);
+        register_code(KC_GRAVE);
+      } else {
+        unregister_code(KC_LSFT);
+        unregister_code(KC_GRAVE);
+        unregister_code(KC_LGUI);
+      }
+      return false; // Skip all further processing of this key
+    default:
+      return true; // Process all other keycodes normally
+  }
+}
 
 void matrix_init_user(void) {
     // set  LED 1 to output and low
@@ -247,23 +271,21 @@ bool led_update_user(led_t led_state) {
         switch (biton32(layer_state))
         {
             case _BASE:
-                clockwise ? tap_code(KC_VOLU) : tap_code(KC_VOLD);
-                break;
+                    clockwise ? tap_code(KC_VOLU) : tap_code(KC_VOLD);
+                    break;
             case _NUM:
                 //Word jumping
-                register_code(KC_LCTRL);
+                register_code(KC_LALT);
                 clockwise ? tap_code(KC_RGHT) : tap_code(KC_LEFT);
-                unregister_code(KC_LCTRL);
+                unregister_code(KC_LALT);
                 break;
             case _NAV:
-                //Window jumping
-                if(!clockwise) { register_code(KC_LSFT); }
-                register_code(KC_LCTRL);
+                //Word selection
+                register_code(KC_LSFT);
                 register_code(KC_LALT);
-                tap_code(KC_TAB);
-                unregister_code(KC_LCTRL);
+                clockwise ? tap_code(KC_RGHT) : tap_code(KC_LEFT);
                 unregister_code(KC_LALT);
-                if(!clockwise) { unregister_code(KC_LSFT); }
+                unregister_code(KC_LSFT);
                 break;
             case _SYM:
                 //Word selection
@@ -274,7 +296,7 @@ bool led_update_user(led_t led_state) {
                 unregister_code(KC_LCTRL);
                 break;
             case _MOUSE:
-                clockwise ? tap_code(KC_MS_WH_DOWN) : tap_code(KC_MS_WH_UP);
+                clockwise ? tap_code(KC_WH_R) : tap_code(KC_WH_L);
                 break;
             case _GAME:
                 clockwise ? tap_code(KC_VOLU) : tap_code(KC_VOLD);

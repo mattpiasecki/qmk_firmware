@@ -1,4 +1,4 @@
-/* Copyright 2020 drhigsby
+/* Copyright 2021 KnoblesseOblige
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,20 +15,27 @@
  */
 #include QMK_KEYBOARD_H
 
+bool is_gui_tab_active = false; // ADD this near the begining of keymap.c
+bool is_winos = false; //Controls slider volume behavior allowing toggle between Win & Mac
+uint16_t gui_tab_timer = 0;     // we will be using them soon.
+uint16_t gui_tab_delay = 1000;  // amount of time to keep mod "held"
+
 enum layers{
   _BASE,
-  _GAME,
-  _GAME2,
+  _APPS,
   _NUM,
   _NAV,
   _SYM,
   _MOUSE
 };
 
+enum my_keycodes {
+  PRVAPP = SAFE_RANGE,
+  NXTAPP
+};
+
 #ifdef COMBO_ENABLE
     enum combo_events {
-    combo_GAME,
-    combo_GAME2,
     combo_ESC,
     combo_BACK,
     combo_TAB,
@@ -46,8 +53,6 @@ enum layers{
     combo_MOUS3,
     };
 
-    const uint16_t PROGMEM game_combo[] = {KC_Z, KC_P, COMBO_END};
-    const uint16_t PROGMEM game2_combo[] = {KC_Q, KC_SLSH, COMBO_END};
     const uint16_t PROGMEM esc_combo[] = {KC_Q, KC_W, COMBO_END};
     const uint16_t PROGMEM bspc_combo[] = {KC_I, KC_O, COMBO_END};
     const uint16_t PROGMEM tab_combo[] = {KC_W, KC_E, COMBO_END};
@@ -65,8 +70,6 @@ enum layers{
     const uint16_t PROGMEM mous3_combo[] = {KC_BTN1, KC_BTN2, COMBO_END};
 
     combo_t key_combos[COMBO_COUNT] = {
-    [combo_GAME] = COMBO(game_combo, TG(_GAME)),
-    [combo_GAME2] = COMBO(game2_combo, TG(_GAME2)),
     [combo_ESC] = COMBO(esc_combo, KC_ESC),
     [combo_BACK] = COMBO(bspc_combo, KC_BSPC),
     [combo_TAB] = COMBO(tab_combo, KC_TAB),
@@ -106,18 +109,20 @@ enum layers{
     // Tap dance enums
     enum {
         X_BSLH,
-        X_NUMTAP
+        X_NUMTAP,
+        X_MAGL,
+        X_MAGR
     };
 
-    #define sTap KC_SLASH
+    #define sTap KC_SLSH
     #define sHold KC_BSLS
     #define dTap KC_PIPE
     #define dHold _MOUSE
 
-    #define nsTap KC_ENT
-    #define nsHold _MOUSE
+    #define nsTap KC_CAPS
+    #define nsHold _NUM
     #define ndTap KC_F12
-    #define ndHold _NUM
+    #define ndHold _MOUSE
 
     td_state_t cur_dance(qk_tap_dance_state_t *state);
 
@@ -128,154 +133,122 @@ enum layers{
     void nx_reset(qk_tap_dance_state_t *state, void *user_data);
 #endif
 
-#define NUM LT(_NUM,KC_F10)
+#define NUM LT(_NUM,A(KC_SPC))
+#define SYMTAB LT(_SYM,KC_TAB)
+#define SYMENT LT(_SYM,KC_ENT)
 #define NAV LT(_NAV,KC_SPC)
-#define NAVENT LT(_NAV,KC_ENT)
-#define NAVPLY LT(_NAV,KC_MPLY)
+#define GS LM(_APPS,MOD_LGUI)
+#define MAGL LCA_T(KC_LPRN)
+#define MAGR LCA_T(KC_RPRN)
 #define SYM LT(_SYM,KC_BSPC)
+#define MBSPC LT(_MOUSE,KC_BSPC)
 #define MOUSE LT(_MOUSE,KC_ENT)
 #define xxx KC_TRNS
-#define MTAB LT(_NAV,KC_MUTE)
-#define GuiG LGUI_T(KC_G)
+#define CtlA CTL_T(KC_A)
 #define SftF LSFT_T(KC_F)
-#define CtlD LCTL_T(KC_D)
+#define GuiD LGUI_T(KC_D)
 #define AltS LALT_T(KC_S)
-#define GuiH RGUI_T(KC_H)
+#define CtlQU RCTL_T(KC_QUOT)
 #define SftJ RSFT_T(KC_J)
-#define CtlK RCTL_T(KC_K)
+#define GuiK RGUI_T(KC_K)
 #define AltL RALT_T(KC_L)
-#define tapDelay 80
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [_BASE] = LAYOUT(
-        KC_Q, KC_W, KC_E, KC_R, KC_T,    KC_Y, KC_U, KC_I, KC_O, KC_P,
-        KC_A, AltS, CtlD, SftF, GuiG, NAVPLY,   GuiH, SftJ, CtlK, AltL, KC_QUOT,
-        KC_Z, KC_X, KC_C, KC_V, KC_B, MTAB,   KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH,
-                TG(_MOUSE), KC_LGUI, NAV,    SYM, NUM, TD(X_NUMTAP)
-  ),
-
-    [_GAME] = LAYOUT(
-        KC_Q, KC_W, KC_E, KC_R, KC_T,    KC_Y, KC_U, KC_I, KC_O, KC_P,
-        KC_A, KC_S, KC_D, KC_F, KC_G, KC_MPLY,   GuiH, SftJ, CtlK, AltL, KC_QUOT,
-        KC_Z, KC_X, KC_C, KC_V, KC_B, KC_MUTE,   KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH,
-                KC_LSFT, KC_LCTL, KC_SPC,    SYM, NUM, NAVENT
-  ),
-
-    [_GAME2] = LAYOUT(
-        KC_Q, KC_W, KC_E, KC_R, KC_T,    KC_Y, KC_U, KC_I, KC_O, KC_P,
-        KC_A, KC_S, KC_D, KC_F, KC_G, KC_F5,   GuiH, SftJ, CtlK, AltL, KC_QUOT,
-        KC_Z, KC_X, KC_C, KC_V, KC_B, KC_F6,   KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH,
-                KC_LSFT, KC_LCTL, KC_SPC,    SYM, NUM, NAVENT
-  ),
-
-    [_NUM] = LAYOUT(
-        KC_GRV, KC_7, KC_8, KC_9, KC_ASTR,   xxx, KC_F7, KC_F8, KC_F9, KC_F12,
-        xxx, KC_4, KC_5, KC_6, KC_MINS, xxx,   xxx, KC_F4, KC_F5, KC_F6, KC_F11,
-        xxx, KC_1, KC_2, KC_3, KC_PLUS, xxx,  xxx, KC_F1, KC_F2, KC_F3, KC_F10,
-        RESET, KC_DOT, KC_0,    xxx, TG(_NUM), xxx
-  ),
-
-    [_NAV] = LAYOUT(
-        xxx,S(KC_HOME),S(KC_UP),S(KC_END),S(KC_PGUP),   KC_PGUP,KC_HOME,KC_UP,KC_END,xxx,
-        xxx,S(C(KC_LEFT)),S(KC_DOWN),S(C(KC_RGHT)),S(KC_PGDN), KC_MSEL,  KC_PGDN,KC_LEFT,KC_DOWN,KC_RGHT,xxx,
-        C(KC_Z),C(KC_X),C(KC_C),C(KC_V), xxx, KC_ENT,   xxx, xxx, xxx, xxx, xxx,
-        xxx, xxx, xxx,   KC_DEL, KC_CAPS, xxx
-  ),
-
-    [_SYM] = LAYOUT(
-        KC_QUOT,C(S(A(KC_W))),KC_EQL,KC_F5,KC_TILD, xxx,KC_UNDS,KC_EXLM,xxx,KC_PERC,
-        KC_AT,KC_MINS,KC_DLR,KC_NO,KC_GRV, KC_MSEL,  KC_HASH,S(A(C(KC_TAB))),C(A(KC_TAB)),KC_PIPE,KC_SCLN,
-        KC_LBRC,KC_ASTR,KC_COLN,KC_CIRC,KC_AMPR, xxx,    KC_NLCK,KC_MAIL,C(G(KC_LEFT)),C(G(KC_RGHT)),KC_BSLS,
-        KC_LBRC, KC_RBRC, TG(_MOUSE),    xxx, xxx, xxx
-  ),
-
-  [_MOUSE] = LAYOUT(
-        xxx,KC_WH_L,KC_MS_U,KC_WH_R, xxx, xxx, xxx, KC_WH_U, xxx, xxx,
-        xxx,KC_MS_L,KC_MS_D,KC_MS_R,KC_WH_U, KC_BTN2, xxx, KC_WH_L, KC_WH_D, KC_WH_R, xxx,
-        xxx,KC_ACL0,KC_ACL1,KC_ACL2,KC_WH_D, KC_BTN1, xxx, KC_ACL0, KC_ACL1, KC_ACL2, xxx,
-        TG(_MOUSE), KC_BTN3,KC_BTN1,    KC_BTN2, TG(_MOUSE), xxx
-  ),
-
+    /* Base */
+    [_BASE] = LAYOUT_default(
+        KC_GESC, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, MBSPC,
+        SYMTAB, CtlA, AltS, GuiD, SftF, KC_G, KC_H, SftJ, GuiK, AltL, CtlQU, SYMENT,
+        MAGL, KC_Z, KC_X, KC_C, KC_V, KC_B, KC_N, KC_M, KC_COMM, KC_DOT, KC_UP, MAGR,
+        MO(_APPS), KC_LCTL, KC_LALT, KC_LGUI, NAV, XXXXXXX, XXXXXXX, TD(X_NUMTAP), KC_LEFT, KC_DOWN, KC_RGHT
+    ),
+    [_APPS] = LAYOUT_default(
+        xxx, xxx, RGB_SAD, RGB_VAI, RGB_SAI, xxx, xxx, xxx, KC_UP, xxx, RGB_MODE_PLAIN, xxx,
+        RGB_TOG, xxx, RGB_HUD, RGB_VAD, RGB_HUI, RGB_MODE_GRADIENT, xxx, KC_LEFT, KC_DOWN, KC_TAB, xxx, KC_ENT,
+        RGB_RMOD, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, RGB_MOD,
+        xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx
+    ),
+    [_NUM] = LAYOUT_default(
+        RESET, xxx, KC_P7, KC_P8, KC_P9, KC_ASTR, xxx, KC_F7, KC_F8, KC_F9, KC_F12, xxx,
+        xxx, xxx, KC_P4, KC_P5, KC_P6, KC_MINS, xxx, KC_F4, KC_F5, KC_F6, KC_F11, xxx,
+        xxx, xxx,  KC_P1, KC_P2, KC_P3, KC_PLUS, xxx, KC_F1, KC_F2, KC_F3, KC_F10, xxx,
+        xxx, xxx, xxx, KC_DOT, KC_P0, xxx, xxx, xxx, xxx, xxx, xxx
+    ),
+    [_NAV] = LAYOUT_default(
+        KC_GESC,xxx,S(G(KC_LEFT)),S(KC_UP),S(G(KC_RIGHT)),S(G(KC_UP)),G(KC_UP),G(KC_LEFT),KC_UP,G(KC_RGHT), xxx, xxx,
+        xxx, G(KC_A),S(A(KC_LEFT)),S(KC_DOWN),S(A(KC_RGHT)),S(G(KC_DOWN)),G(KC_DOWN),KC_LEFT,KC_DOWN,KC_RGHT, xxx, xxx,
+        xxx, G(KC_Z),G(KC_X),G(KC_C),G(KC_V), xxx, xxx, xxx, G(A(KC_LEFT)), G(A(KC_RGHT)), xxx, xxx,
+        xxx, xxx, xxx, xxx, xxx, xxx, xxx, KC_DEL, xxx, xxx, xxx
+    ),
+    [_SYM] = LAYOUT_default(
+        C(G(KC_Q)), KC_QUES,G(KC_W),KC_EQL,KC_F5,KC_TILD,C(G(KC_SPC)),KC_UNDS,KC_EXLM,G(S(KC_A)),KC_PERC,KC_DEL,
+        KC_CAPS, KC_AT,KC_MINS,KC_DLR,KC_NO,KC_GRV,KC_HASH,PRVAPP,NXTAPP,KC_PIPE,KC_SCLN, xxx,
+        KC_LBRC, KC_BSLS,KC_ASTR,KC_COLN,KC_CIRC,KC_AMPR,KC_NLCK,xxx,C(KC_LEFT), C(KC_RGHT),KC_SLSH, KC_RBRC,
+        xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx
+    ),
+    [_MOUSE] = LAYOUT_default(
+        TG(_MOUSE), xxx, KC_WH_L,KC_MS_U,KC_WH_R, xxx, xxx, xxx, KC_WH_U, xxx, xxx, xxx,
+        xxx, xxx,KC_MS_L,KC_MS_D,KC_MS_R,KC_WH_U, xxx, KC_WH_L, KC_WH_D, KC_WH_R, xxx, xxx,
+        xxx, xxx,KC_ACL0,KC_ACL1,KC_ACL2,KC_WH_D, xxx, KC_ACL0, KC_ACL1, KC_ACL2, KC_VOLU, KC_MUTE,
+        RESET, xxx, KC_BTN3,KC_BTN1,KC_BTN2, xxx, xxx, TG(_MOUSE), KC_BTN4,  KC_VOLD, KC_BTN5
+    )
 };
 
-#ifdef ENCODER_ENABLE
-    bool encoder_update_user(uint8_t index, bool clockwise) {
-        if (index == 0) { /* bottom encoder */
-            switch (biton32(layer_state))
-            {
-                case _BASE:
-                    clockwise ? tap_code(KC_MFFD) : tap_code(KC_MRWD);
-                    break;
-                case _GAME:
-                    clockwise ? tap_code(KC_MFFD) : tap_code(KC_MRWD);
-                    break;
-                case _GAME2:
-                    clockwise ? tap_code_delay(KC_F2,tapDelay) : tap_code_delay(KC_F6,tapDelay);
-                    break;
-                case _NUM:
-                    //Word selection
-                    register_code(KC_LSFT);
-                    register_code(KC_LCTRL);
-                    clockwise ? tap_code(KC_RGHT) : tap_code(KC_LEFT);
-                    unregister_code(KC_LSFT);
-                    unregister_code(KC_LCTRL);
-                    break;
-                case _NAV:
-                    //Tab jumping
-                    if(!clockwise) { register_code(KC_LSFT); }
-                    register_code(KC_LCTRL);
-                    tap_code(KC_TAB);
-                    unregister_code(KC_LCTRL);
-                    if(!clockwise) { unregister_code(KC_LSFT); }
-                    break;
-                case _SYM:
-                    //Word jumping
-                    register_code(KC_LCTRL);
-                    clockwise ? tap_code(KC_RGHT) : tap_code(KC_LEFT);
-                    unregister_code(KC_LCTRL);
-                    break;
-                case _MOUSE:
-                    clockwise ? tap_code(KC_MS_WH_RIGHT) : tap_code(KC_MS_WH_LEFT);
-                    break;
-            }
-        } else if (index == 1) { /* top encoder */
-            switch (biton32(layer_state))
-            {
-                case _BASE:
-                    clockwise ? tap_code(KC_VOLU) : tap_code(KC_VOLD);
-                    break;
-                case _GAME:
-                    clockwise ? tap_code(KC_VOLU) : tap_code(KC_VOLD);
-                    break;
-                case _GAME2:
-                    clockwise ? tap_code_delay(KC_F4,tapDelay*3) : tap_code_delay(KC_F5,tapDelay*3);
-                    break;
-                case _NUM:
-                    //Page selection
-                    register_code(KC_LSFT);
-                    clockwise ? tap_code(KC_DOWN) : tap_code(KC_UP);
-                    unregister_code(KC_LSFT);
-                    break;
-                case _NAV:
-                    //Destkop jumping
-                    register_code(KC_LCTRL);
-                    register_code(KC_LGUI);
-                    clockwise ? tap_code(KC_RGHT) : tap_code(KC_LEFT);
-                    unregister_code(KC_LCTRL);
-                    unregister_code(KC_LGUI);
-                    break;
-                case _SYM:
-                    //Page jumping
-                    clockwise ? tap_code(KC_DOWN) : tap_code(KC_UP);
-                    break;
-                case _MOUSE:
-                    clockwise ? tap_code(KC_MS_WH_DOWN) : tap_code(KC_MS_WH_UP);
-                    break;
-            }
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case NXTAPP:
+      if (record->event.pressed) {
+        if (!is_gui_tab_active) {
+            is_winos ? register_code(KC_LALT) : register_code(KC_LGUI);
         }
-        return true;
+        gui_tab_timer = timer_read();
+        register_code(KC_TAB);
+      } else {
+        is_winos ? unregister_code(KC_LALT) : unregister_code(KC_LGUI);
+      }
+      return false; // Skip all further processing of this key
+    case PRVAPP:
+      if (record->event.pressed) {
+        if (!is_gui_tab_active) {
+            is_gui_tab_active = true;
+            is_winos ? register_code(KC_LALT) : register_code(KC_LGUI);
+        }
+        gui_tab_timer = timer_read();
+        register_code(KC_LSFT);
+        is_winos ? register_code(KC_TAB) : register_code(KC_GRAVE);
+      } else {
+        unregister_code(KC_LSFT);
+        if(is_winos) {
+            unregister_code(KC_TAB);
+            unregister_code(KC_LALT);
+        } else {
+            unregister_code(KC_GRAVE);
+            unregister_code(KC_LGUI);
+        }
+      }
+      return false; // Skip all further processing of this key
+    case MAGL:
+        if (record->tap.count && record->event.pressed) {
+            tap_code16(KC_LPRN);
+            return false;        // Return false to ignore further processing of key
+        }
+    case MAGR:
+        if (record->tap.count && record->event.pressed) {
+            tap_code16(KC_RPRN);
+            return false;        // Return false to ignore further processing of key
+        }
+    default:
+      return true; // Process all other keycodes normally
+  }
+}
+
+void matrix_scan_user(void) { // The very important timer.
+  if (is_gui_tab_active) {
+    if (timer_elapsed(gui_tab_timer) > 1000) {
+      unregister_code(KC_LGUI);
+      is_gui_tab_active = false;
     }
-#endif
+  }
+}
 
 #ifdef TAP_DANCE_ENABLE
     /* Return an integer that corresponds to what kind of tap dance should be executed.
@@ -366,7 +339,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         switch (xtap_state.state) {
             case TD_SINGLE_TAP: register_code16(nsTap); break;
             case TD_SINGLE_HOLD: layer_on(nsHold); break;
-            case TD_DOUBLE_TAP: register_code16(ndTap); break;
+            case TD_DOUBLE_TAP: layer_on(ndHold); break;
             case TD_DOUBLE_HOLD: layer_on(ndHold); break;
             // Last case is for fast typing. Assuming your key is `f`:
             // For example, when typing the word `buffer`, and you want to make sure that you send `ff` and not `Esc`.
@@ -380,7 +353,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         switch (xtap_state.state) {
             case TD_SINGLE_TAP: unregister_code16(nsTap); break;
             case TD_SINGLE_HOLD: layer_off(nsHold); break;
-            case TD_DOUBLE_TAP: unregister_code16(ndTap); break;
+            case TD_DOUBLE_TAP: break;
             case TD_DOUBLE_HOLD: break;
             case TD_DOUBLE_SINGLE_TAP: unregister_code16(nsTap);
             default: break;

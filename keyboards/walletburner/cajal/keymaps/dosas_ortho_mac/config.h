@@ -44,7 +44,7 @@
 #define DEBOUNCE 5
 
 #ifdef COMBO_ENABLE
-    #define COMBO_COUNT 12
+    #define COMBO_COUNT 6
     #define COMBO_TERM 20
 #endif
 
@@ -81,21 +81,21 @@
 #define NAV LT(_NAV,KC_SPC)
 #define SYM LT(_SYM,KC_BSPC)
 #define MOUSE LT(_MOUSE,KC_ENT)
-#define KPLAY LT(_NAV,KC_MPLY)
+#define KPLAY LT(_NAV,KC_MUTE)
 #define xxx KC_TRNS
-#define GuiG LGUI_T(KC_G)
+#define CtlA LCTL_T(KC_A)
 #define SftF LSFT_T(KC_F)
-#define CtlD LCTL_T(KC_D)
+#define GuiD LGUI_T(KC_D)
 #define AltS LALT_T(KC_S)
-#define GuiH RGUI_T(KC_H)
+#define CtlScln RCTL_T(KC_SCLN)
 #define SftJ RSFT_T(KC_J)
-#define CtlK RCTL_T(KC_K)
+#define GuiK RGUI_T(KC_K)
 #define AltL RALT_T(KC_L)
-#define End LM(MOD_LCTL,_NAV)
-#define WinPrv S(C(A(KC_TAB)))
-#define WinNxt C(A(KC_TAB))
-#define DskPrv C(G(KC_LEFT))
-#define DskNxt C(G(KC_RGHT))
+#define End LCA_T(A(KC_SPC))
+#define WinPrv C(KC_LEFT)
+#define WinNxt C(KC_RGHT)
+#define TabPrv G(A(KC_LEFT))
+#define TabNxt G(A(KC_RGHT))
 
 /* Mechanical locking support. Use KC_LCAP, KC_LNUM or KC_LSCR instead in keymap */
 #define LOCKING_SUPPORT_ENABLE
